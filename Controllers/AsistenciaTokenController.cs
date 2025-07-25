@@ -80,7 +80,7 @@ public class AsistenciaTokenController : ControllerBase
     //to unactive token
     public class DesactivarTokenRequest
     {
-        public string Token { get; set; }
+        public string? Token { get; set; }
     }
 
     [HttpPost("desactivar")]

@@ -4,6 +4,7 @@ using APIControlEscolar.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIControlEscolar.Migrations
 {
     [DbContext(typeof(CONTROL_ESCOLAR))]
-    partial class CONTROL_ESCOLARModelSnapshot : ModelSnapshot
+    [Migration("20250724070846_AdminsAdded")]
+    partial class AdminsAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,8 +141,8 @@ namespace APIControlEscolar.Migrations
                         .HasColumnType("varchar(20)")
                         .HasDefaultValue("Activo");
 
-                    b.Property<DateTime>("FechaNacimiento")
-                        .HasColumnType("datetime2");
+                    b.Property<DateOnly>("FechaNacimiento")
+                        .HasColumnType("date");
 
                     b.Property<string>("Genero")
                         .HasMaxLength(1)
@@ -619,7 +622,7 @@ namespace APIControlEscolar.Migrations
 
                     b.HasKey("IdMaestro", "IdMateria");
 
-                    b.ToTable("MaestroMaterias", (string)null);
+                    b.ToTable("MaestroMaterias");
                 });
 
             modelBuilder.Entity("APIControlEscolar.Models.Materium", b =>

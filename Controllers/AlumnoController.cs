@@ -53,8 +53,20 @@ public class AlumnoController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Alumno alumno)
     {
-        try
+        if (!ModelState.IsValid)
         {
+            var errores = ModelState
+                .Where(ms => ms.Value.Errors.Count > 0)
+                .Select(ms => new
+                {
+                    Campo = ms.Key,
+                    Errores = ms.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+                });
+
+            return BadRequest(new { mensaje = "Errores de validación", detalles = errores });
+        }
+        try
+        {           
             if (alumno == null || string.IsNullOrWhiteSpace(alumno.Matricula))
             {
                 return BadRequest(new { error = "Matrícula y datos obligatorios no deben estar vacíos." });
@@ -89,7 +101,7 @@ public class AlumnoController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError($"❌ Error al crear alumno: {ex.Message}");
+            _logger.LogError($"Error al crear alumno: {ex.Message}");
             return BadRequest(new { error = ex.Message });
         }
     }

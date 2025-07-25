@@ -1,5 +1,6 @@
 ﻿using APIControlEscolar.Data;
 using APIControlEscolar.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +9,10 @@ namespace APIControlEscolar.Controllers
 {
 
     [EnableCors("_myCorsPolicy")]
+    [Authorize]
     [Route("api/auth")]
     [ApiController]
-    public class PerfilController : Controller
+    public class PerfilController : ControllerBase
     {
         private readonly CONTROL_ESCOLAR _context;
         private readonly IJwtService _jwtService;
@@ -87,6 +89,26 @@ namespace APIControlEscolar.Controllers
                         Rol = "Maestro",
                         Imagen = maestro.ImageMaestro
                         
+                    });
+                }
+                else if (rolId == 3)
+                {
+                    var admin = await _context.Admins
+                        .Include(m => m.Usuario)
+                        .FirstOrDefaultAsync(m => m.IdAdmin.ToString() == perfilId);
+
+                    if (admin == null)
+                        return NotFound("Maestro no encontrado.");
+
+                    return Ok(new
+                    {
+                        NombreCompleto = $"{admin.Nombre} {admin.ApellidoPaterno} {admin.ApellidoMaterno}",
+                        Telefono = admin.Telefono,
+                        Direccion = admin.Direccion,
+                        Matricula = admin.IdAdmin.ToString(),
+                        Correo = admin.Usuario?.Email,
+                        Rol = "Admin",
+                        Imagen = admin.ImageAdmin
                     });
                 }
                 else

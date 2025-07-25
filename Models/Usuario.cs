@@ -47,6 +47,8 @@ namespace APIControlEscolar.Models
         [Range(1, int.MaxValue, ErrorMessage = "El ID de maestro debe ser un número positivo.")]
         public int? IdMaestro { get; set; }
 
+        public int? IdAdmin { get; set; }
+
         // Estado es nullable (string?), lo que indica que es opcional.
         // Si siempre debe tener un valor, quita el '?' y añade [Required].
         [StringLength(10, ErrorMessage = "El estado no puede exceder los 10 caracteres.")]
@@ -71,6 +73,8 @@ namespace APIControlEscolar.Models
 
         // [JsonIgnore] // Si no quieres que se serialice en JSON.
         public virtual Maestro? IdMaestroNavigation { get; set; }
+
+        public virtual Admins? IdAdminNavigation {  get; set; }
 
         // [Required(ErrorMessage = "La entidad Rol es obligatoria.")] // No es necesario si IdRol es [Required]
         // [JsonIgnore] // Si no quieres que se serialice en JSON.

@@ -1,6 +1,7 @@
 ﻿using APIControlEscolar.ValidationAttributes;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; // Necesario para [NotMapped]
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization; // Necesario para [NotMapped]
 
 namespace APIControlEscolar.Models
 {
@@ -20,8 +21,8 @@ namespace APIControlEscolar.Models
         // asumiendo que tu matrícula es numérica, como mencionaste anteriormente.
 
         [Required(ErrorMessage = "La matrícula es obligatoria.")]
-        [StringLength(10, MinimumLength = 6, ErrorMessage = "La matrícula debe tener entre 6 y 10 caracteres.")]
-        [RegularExpression(@"^\d{6,10}$", ErrorMessage = "La matrícula debe contener solo números y tener entre 6 y 10 dígitos.")]
+        [StringLength(10, MinimumLength = 5, ErrorMessage = "La matrícula debe tener entre 5 y 10 caracteres.")]
+        [RegularExpression(@"^\d{5,10}$", ErrorMessage = "La matrícula debe contener solo números y tener entre 5 y 10 dígitos.")]
         public string Matricula { get; set; } = null!;
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
@@ -45,7 +46,7 @@ namespace APIControlEscolar.Models
         [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
         [RangoFechaNacimiento(1950, ErrorMessage = "La fecha de nacimiento debe ser a partir del año 1950 y no puede ser en el futuro.")]
         // Si usas DateOnly:
-        public DateOnly FechaNacimiento { get; set; }
+        public DateTime FechaNacimiento { get; set; }
 
         // [StringLength(1, ErrorMessage = "El género debe ser un solo carácter (M/F/O).")]
         // [RegularExpression("^[MFO]$", ErrorMessage = "El género debe ser 'M', 'F' u 'O'.")]
@@ -60,9 +61,9 @@ namespace APIControlEscolar.Models
         // [RegularExpression(@"^\d{10}$", ErrorMessage = "El teléfono debe contener solo 10 dígitos.")]
         // Asumiendo un formato de 10 dígitos numéricos para México.
 
-        [StringLength(20, MinimumLength = 20, ErrorMessage = "El teléfono debe tener 20 dígitos.")]
+        [StringLength(10, MinimumLength = 10, ErrorMessage = "El teléfono debe tener 10 dígitos.")]
         [Phone(ErrorMessage = "Formato de teléfono inválido.")]
-        [RegularExpression(@"^\d{20}$", ErrorMessage = "El teléfono debe contener solo 20 dígitos.")]
+        [RegularExpression(@"^\d{10}$", ErrorMessage = "El teléfono debe contener solo 10 dígitos.")]
         public string? Telefono { get; set; }
 
         [StringLength(225, ErrorMessage = "La dirección no puede exceder los 225 caracteres.")]
@@ -127,9 +128,12 @@ namespace APIControlEscolar.Models
         // [ValidateComplexType] // Para validar propiedades de navegación si fueran objetos complejos con sus propias validaciones.
         // [NotMapped] // Si no quieres que EF Core las mapee a la base de datos.
         public virtual Usuario? Usuario { get; set; }
-        public Grado Grado { get; set; } = null!;
-        public Grupo Grupo { get; set; } = null!;
-        public Carrera Carrera { get; set; } = null!;
+        [JsonIgnore]
+        public Grado? Grado { get; set; } = null!;
+        [JsonIgnore]
+        public Grupo? Grupo { get; set; } = null!;
+        [JsonIgnore]
+        public Carrera? Carrera { get; set; } = null!;
 
         // Asegúrate de que todas las propiedades de navegación tengan la anotación [Required] si no pueden ser null.
         // Por ejemplo, si un Alumno SIEMPRE debe tener un Grado:

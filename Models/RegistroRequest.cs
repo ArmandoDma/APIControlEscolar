@@ -33,5 +33,10 @@ namespace APIControlEscolar.Models
         [Required(ErrorMessage = "El ID de periodo es obligatorio.")]
         [Range(1, int.MaxValue, ErrorMessage = "El ID de periodo debe ser un número positivo.")]
         public int IdPeriodo { get; set; }
+
+        public int IdRol {  get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "El ID de administrador debe ser un número positivo.")]
+        public int? IdAdmin { get; set; }
     }
 }

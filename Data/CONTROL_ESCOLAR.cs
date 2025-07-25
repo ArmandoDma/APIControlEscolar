@@ -26,11 +26,76 @@ namespace APIControlEscolar.Data
         public DbSet<Bitacora> Bitacoras { get; set; }
         public DbSet<Asistencia> Asistencias { get; set; }
         public DbSet<AsistenciaToken> AsistenciaTokens { get; set; }
-
         public DbSet<Extracurricular> Extracurricular {  get; set; }
+        public DbSet<Admins> Admins { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Admins>(entity =>
+            {
+                entity.HasKey(e => e.IdAdmin);
+                entity.ToTable("ADMINS");
+
+                entity.Property(e => e.Nombre)
+                      .HasMaxLength(50)
+                      .IsUnicode(false)
+                      .IsRequired();
+
+                entity.Property(e => e.ApellidoPaterno)
+                      .HasMaxLength(50)
+                      .IsUnicode(false)
+                      .IsRequired();
+
+                entity.Property(e => e.ApellidoMaterno)
+                      .HasMaxLength(50)
+                      .IsUnicode(false)
+                      .IsRequired();
+
+                entity.Property(e => e.FechaNacimiento)
+                      .HasColumnType("date")
+                      .IsRequired();
+
+                entity.Property(e => e.Genero)
+                      .HasMaxLength(1)
+                      .IsUnicode(false)
+                      .IsFixedLength();
+
+                entity.Property(e => e.Telefono)
+                      .HasMaxLength(12)
+                      .IsUnicode(false);
+
+                entity.Property(e => e.Direccion)
+                      .HasMaxLength(255)
+                      .IsUnicode(false);
+
+                entity.Property(e => e.CodigoPostal)
+                      .HasMaxLength(5)
+                      .IsUnicode(false)
+                      .IsRequired();
+
+                entity.Property(e => e.IdMunicipio)
+                      .IsRequired();
+
+                entity.Property(e => e.IdEstado)
+                      .IsRequired();
+
+                entity.Property(e => e.EstadoAdmin)
+                      .HasMaxLength(20)
+                      .IsUnicode(false)
+                      .HasDefaultValue("Activo");
+
+                entity.Property(e => e.ImageAdmin)
+                      .HasMaxLength(255)
+                      .IsUnicode(false);
+
+                // Relación con USUARIO (si aplica)
+                entity.HasOne(e => e.Usuario)
+                      .WithOne(u => u.IdAdminNavigation)
+                      .HasForeignKey<Usuario>(u => u.IdAdmin)
+                      .HasConstraintName("FK_USUARIO_ADMIN")
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
             // Configuración de Alumno
             modelBuilder.Entity<Alumno>(entity =>
             {
@@ -371,7 +436,6 @@ namespace APIControlEscolar.Data
                 entity.Property(e => e.Nombre).HasMaxLength(200).IsRequired();
                 entity.Property(e => e.Tipo).HasMaxLength(100).IsRequired();
             });
-
         }
     }
 }

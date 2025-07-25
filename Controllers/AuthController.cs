@@ -45,10 +45,16 @@ namespace APIControlEscolar.Controllers
                     return BadRequest(new { error = "El correo y la contraseña son obligatorios." });
                 }
 
+                // Validar si es admin y no pasó IdAdmin
+                if (request.IdRol == 3 && !request.IdAdmin.HasValue)
+                {
+                    return BadRequest(new { error = "Se requiere el ID del administrador para registrar un usuario con rol Admin." });
+                }
+
                 var newUser = await _authService.RegisterUserAsync(request);
-                
-                int userId = newUser.IdAlumno ?? newUser.IdMaestro ?? 0;
-                
+
+                int userId = newUser.IdAlumno ?? newUser.IdMaestro ?? newUser.IdAdmin ?? 0;
+
                 var token = await _jwtService.GenerarTokenConId(userId, newUser.Email, newUser.IdRol);
 
                 return Ok(new { message = "Usuario registrado con éxito", token });
@@ -59,6 +65,7 @@ namespace APIControlEscolar.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
 
         /// <summary>
         /// 📌 Inicia sesión y devuelve un token de autenticación si las credenciales son correctas.

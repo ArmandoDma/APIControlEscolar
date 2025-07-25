@@ -25,42 +25,56 @@ namespace APIControlEscolar.Services
         /// </summary>
         public async Task<Usuario> RegisterUserAsync(RegistroRequest request)
         {
-            // Verificar si el usuario ya existe
             var existingUser = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (existingUser != null)
-            {
                 throw new Exception("Ya existe un usuario con ese correo.");
-            }
 
-            // Verificar si la matrícula corresponde a un alumno o maestro
-            var alumno = await _context.Alumnos.FirstOrDefaultAsync(a => a.Matricula == request.Matricula);
-            var maestro = await _context.Maestros.FirstOrDefaultAsync(m => m.NumeroEmpleado == request.Matricula);
+            string? passwordHash = null;
+            string? salt = null;
 
-            if (alumno == null && maestro == null)
+            if (!string.IsNullOrWhiteSpace(request.Password))
             {
-                throw new Exception("La matrícula no corresponde a un alumno o maestro registrado.");
+                salt = GenerateRandomSalt();
+                passwordHash = HashPassword(request.Password, salt);
             }
 
-            // Determinar el rol basado en si es alumno o maestro
-            int idRol = alumno != null ? 1 : 2; // 1 = Alumno, 2 = Maestro
-
-            // Generar salt y hash de la contraseña
-            var salt = GenerateRandomSalt();
-            var passwordHash = HashPassword(request.Password, salt);
-
-            // Crear usuario
             var newUser = new Usuario
             {
                 Email = request.Email,
                 PasswordHash = passwordHash,
                 Salt = salt,
-                IdRol = idRol,
-               
+                IdRol = request.IdRol,
+                FechaRegistro = DateTime.Now,
+                Estado = "Activo"
             };
 
-            // Asignar ID correspondiente
-            if (alumno != null) newUser.IdAlumno = alumno.IdAlumno;
-            if (maestro != null) newUser.IdMaestro = maestro.IdMaestro;
+            if (request.IdRol == 1) // Alumno
+            {
+                string matricula = request.Matricula.ToString();
+                var alumno = await _context.Alumnos.FirstOrDefaultAsync(a => a.Matricula == matricula);
+                if (alumno == null)
+                    throw new Exception("La matrícula no corresponde a un alumno registrado.");
+                newUser.IdAlumno = alumno.IdAlumno;
+            }
+            else if (request.IdRol == 2) // Maestro
+            {
+                string empleado = request.Matricula.ToString();
+                var maestro = await _context.Maestros.FirstOrDefaultAsync(m => m.NumeroEmpleado == empleado);
+                if (maestro == null)
+                    throw new Exception("La matrícula no corresponde a un maestro registrado.");
+                newUser.IdMaestro = maestro.IdMaestro;
+            }
+            else if (request.IdRol == 3) // Admin
+            {
+                if (!request.IdAdmin.HasValue)
+                    throw new Exception("Se requiere el IdAdmin para registrar un administrador.");
+
+                var admin = await _context.Admins.FindAsync(request.IdAdmin.Value);
+                if (admin == null)
+                    throw new Exception("No se encontró un administrador con ese ID.");
+
+                newUser.IdAdmin = admin.IdAdmin;
+            }
 
             _context.Usuarios.Add(newUser);
             await _context.SaveChangesAsync();
@@ -79,12 +93,15 @@ namespace APIControlEscolar.Services
             }
 
             var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email && u.IdRol == IdRol);
-            if (user == null || HashPassword(password, user.Salt) != user.PasswordHash)
+            if (user == null || string.IsNullOrEmpty(user.Salt) || string.IsNullOrEmpty(user.PasswordHash) ||
+                HashPassword(password, user.Salt) != user.PasswordHash)
             {
                 throw new UnauthorizedAccessException("Credenciales incorrectas.");
             }
 
-            int userId = user.IdAlumno ?? user.IdMaestro ?? 0;
+
+            int userId = user.IdAlumno ?? user.IdMaestro ?? user.IdAdmin ?? 0;
+
 
             return await _jwtService.GenerarTokenConId(userId, user.Email, user.IdRol);
 

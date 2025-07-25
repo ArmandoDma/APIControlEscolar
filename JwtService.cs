@@ -37,7 +37,8 @@ namespace APIControlEscolar
         /// Generacion Token
         public async Task<string> GenerarTokenConId(int user, string email, int IdRol)
         {
-            string rolNombre = IdRol == 1 ? "Alumno" : "Maestro";
+            string rolNombre = IdRol == 1 ? "Alumno" : IdRol == 2 ? "Maestro" : "Administrador";
+
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, email),
@@ -50,6 +51,8 @@ namespace APIControlEscolar
                 claims.Add(new Claim("alumnoId", user.ToString()));
             else if (IdRol == 2)
                 claims.Add(new Claim("maestroId", user.ToString()));
+            else if (IdRol == 3)
+                claims.Add(new Claim("adminId", user.ToString()));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -167,7 +170,8 @@ namespace APIControlEscolar
             }
 
             var id = claimsPrincipal.FindFirst("alumnoId")?.Value
-                  ?? claimsPrincipal.FindFirst("maestroId")?.Value;
+                  ?? claimsPrincipal.FindFirst("maestroId")?.Value
+                  ?? claimsPrincipal.FindFirst("adminId")?.Value;
 
             return id;
         }
